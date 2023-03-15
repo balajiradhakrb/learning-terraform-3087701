@@ -1,44 +1,25 @@
-def gv
-
 pipeline {
     agent any
-    parameters {
-        choice(name: 'VERSION', choices: ['1.1.0', '1.2.0', '1.3.0'], description: '')
-        booleanParam(name: 'executeTests', defaultValue: true, description: '')
-    }
     stages {
-        stage("init") {
+        stage('checkout') {
             steps {
-                script {
-                   gv = load "script.groovy" 
+                 script{
+                        dir("terraform")
+                        {
+                            git "https://github.com/balajiradhakrb/learning-terraform-3087701.git"
+                        }
+                    }
                 }
+            }
+        stage('init') {
+            steps {
+                sh 'terraform init'
             }
         }
-        stage("build") {
+        stage('Deploy') {
             steps {
-                script {
-                    gv.buildApp()
-                }
+                sh 'terraform apply --auto-approve'
             }
         }
-        stage("test") {
-            when {
-                expression {
-                    params.executeTests
-                }
-            }
-            steps {
-                script {
-                    gv.testApp()
-                }
-            }
-        }
-        stage("deploy") {
-            steps {
-                script {
-                    gv.deployApp()
-                }
-            }
-        }
-    }   
+    }
 }
